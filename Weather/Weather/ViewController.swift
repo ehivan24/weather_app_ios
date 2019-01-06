@@ -6,6 +6,7 @@
 //  Copyright © 2018 edwing santos. All rights reserved.
 //
 
+import Foundation
 import UIKit
 import SwiftyJSON
 import Alamofire
@@ -13,6 +14,9 @@ import NVActivityIndicatorView
 import CoreLocation
 
 class ViewController: UIViewController, CLLocationManagerDelegate {
+    
+    private let LOG_TAG: String = "MAIN_VIEW"
+
     @IBOutlet weak var mLocationLabel: UILabel!
     @IBOutlet weak var mDayOfWeekLabel: UILabel!
     @IBOutlet weak var mConditionImageView: UIImageView!
@@ -22,7 +26,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     
     let mGradientLayer = CAGradientLayer()
     let mWhiteColorCode: Float = 255.0
-    var activityNavigator: NVActivityIndicatorView!
+    var activityIndicator: NVActivityIndicatorView!
     let locationManager =  CLLocationManager()
     
     override func viewDidLoad() {
@@ -32,12 +36,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         let indicatorSize: CGFloat = 70
         let indicatorFrame = CGRect(x:(view.frame.width - indicatorSize)/2,
                                     y:(view.frame.height)/2, width: indicatorSize , height: indicatorSize)
-        activityNavigator = NVActivityIndicatorView(frame: indicatorFrame, type: .lineScale, color: UIColor.white, padding: 20.0 )
-        activityNavigator.backgroundColor = UIColor.black
-        view.addSubview(activityNavigator)
+        activityIndicator = NVActivityIndicatorView(frame: indicatorFrame, type: .lineScale, color: UIColor.white, padding: 20.0 )
+        activityIndicator.backgroundColor = UIColor.black
+        view.addSubview(activityIndicator)
         
         locationManager.requestWhenInUseAuthorization()
-        activityNavigator.startAnimating()
+        activityIndicator.startAnimating()
         
         if (CLLocationManager.locationServicesEnabled()){
             locationManager.delegate = self
@@ -68,15 +72,24 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         print(AppSettings.INITIAL_LON)
         let weatherAPIURL = AppSettings.getOpenWeatherApiUrl(lat: AppSettings.INITIAL_LAT, lon: AppSettings.INITIAL_LON)
         print(weatherAPIURL)
-        Alamofire.request(weatherAPIURL).responseJSON{
+        Alamofire.request(weatherAPIURL).responseJSON {
             response in
-            self.activityNavigator.stopAnimating()
+            self.activityIndicator.stopAnimating()
             
             if let responseStr = response.result.value {
                 let jsonResponse = JSON(responseStr)
-                print(jsonResponse)
+                //AppSettings.logDebug(label: self.LOG_TAG, anyObject: jsonResponse)
                 let jsonWeather = jsonResponse["weather"].array![0]
+                AppSettings.logDebug(label: self.LOG_TAG, anyObject: jsonWeather)
+                let jsonTemp = jsonResponse["main"]
+                AppSettings.logDebug(label: self.LOG_TAG, anyObject: jsonTemp)
+                let iconName = jsonWeather["icon"].stringValue
+                AppSettings.logDebug(label: self.LOG_TAG, anyObject: iconName)
                 
+                self.mLocationLabel.text = jsonResponse["name"].stringValue
+                self.mConditionImageView.image = UIImage(named: iconName)
+                self.mConditionLabel.text = jsonWeather["main"].stringValue
+                self.mConditionDegreesLabel.text = "\(Int(round(jsonTemp["temp"].doubleValue)))℃"
             }
         }
     }
