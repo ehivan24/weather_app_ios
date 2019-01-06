@@ -16,7 +16,7 @@ class BlueBackgroundView {
     static var blueTopColor: Float = 1.0
     
     // red: 72 / 255.0, green: 114.0 / 255.0, blue: 184.0 / 255, alpha: 1.0
-    static var redBottomColor: Float = 72.0
-    static var greenBottomColor: Float = 114.0
-    static var blueBottomColor: Float = 184.0
+    static var redBottomColor: Float = 215.0
+    static var greenBottomColor: Float = 210.0
+    static var blueBottomColor: Float = 255.0
 }

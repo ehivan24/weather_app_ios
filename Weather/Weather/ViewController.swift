@@ -34,8 +34,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         mBackgroundView.layer.addSublayer(mGradientLayer)
         
         let indicatorSize: CGFloat = 70
-        let indicatorFrame = CGRect(x:(view.frame.width - indicatorSize)/2,
-                                    y:(view.frame.height)/2, width: indicatorSize , height: indicatorSize)
+        let indicatorFrame = CGRect(x:(view.frame.width - indicatorSize) / 2,
+                                    y:(view.frame.height) / 2, width: indicatorSize , height: indicatorSize)
         activityIndicator = NVActivityIndicatorView(frame: indicatorFrame, type: .lineScale, color: UIColor.white, padding: 20.0 )
         activityIndicator.backgroundColor = UIColor.black
         view.addSubview(activityIndicator)
@@ -68,10 +68,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         let location = locations[0]
         AppSettings.INITIAL_LAT = location.coordinate.latitude
         AppSettings.INITIAL_LON = location.coordinate.longitude
-        print(AppSettings.INITIAL_LAT)
-        print(AppSettings.INITIAL_LON)
+        AppSettings.logDebug(label: self.LOG_TAG, anyObject: AppSettings.INITIAL_LAT)
+        AppSettings.logDebug(label: self.LOG_TAG, anyObject: AppSettings.INITIAL_LON)
         let weatherAPIURL = AppSettings.getOpenWeatherApiUrl(lat: AppSettings.INITIAL_LAT, lon: AppSettings.INITIAL_LON)
-        print(weatherAPIURL)
+        AppSettings.logDebug(label: self.LOG_TAG, anyObject: weatherAPIURL)
         Alamofire.request(weatherAPIURL).responseJSON {
             response in
             self.activityIndicator.stopAnimating()
@@ -90,8 +90,20 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                 self.mConditionImageView.image = UIImage(named: iconName)
                 self.mConditionLabel.text = jsonWeather["main"].stringValue
                 self.mConditionDegreesLabel.text = "\(Int(round(jsonTemp["temp"].doubleValue)))℃"
+                
+                let date = Date()
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "EEEE"
+                AppSettings.logDebug(label: self.LOG_TAG, anyObject: date)
+                self.mDayOfWeekLabel.text = dateFormatter.string(from: date)
+                
+                let suffix = iconName.suffix(1)
+                AppSettings.logDebug(label: self.LOG_TAG, anyObject: suffix)
+                self.updateBackgroundColorBased(suffixTime: suffix)
             }
         }
+        
+        self.locationManager.stopUpdatingLocation()
     }
     
     func setViewBackground(redTopColor: Float, greenTopColor: Float, blueTopColor: Float,
@@ -113,10 +125,33 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
         bottomViewColor = UIColor(red: CGFloat(redBottomColor / mWhiteColorCode),
                                       green: CGFloat(redBottomColor / mWhiteColorCode),
-                                      blue: CGFloat(redBottomColor / mWhiteColorCode), alpha: 1.0).cgColor
+                                      blue: CGFloat(redBottomColor / mWhiteColorCode),
+                                      alpha: 1.0).cgColor
         
         mGradientLayer.frame = view.bounds
         mGradientLayer.colors = [topViewColor, bottomViewColor]
+    }
+    
+    func updateBackgroundColorBased(suffixTime: Substring){
+        if(suffixTime == "n"){
+            self.setViewBackground(redTopColor: BlackBackgroundView.redTopColor,
+                                   greenTopColor: BlackBackgroundView.greenTopColor,
+                                   blueTopColor: BlackBackgroundView.blueTopColor,
+                                   redBottomColor: BlackBackgroundView.redBottomColor,
+                                   greenBottomColor: BlackBackgroundView.blueBottomColor,
+                                   blueBottomColor: BlackBackgroundView.blueBottomColor,
+                                   darkBackground: true)
+            
+        } else {
+            // must be day time
+            self.setViewBackground(redTopColor: BlueBackgroundView.redTopColor,
+                                   greenTopColor: BlueBackgroundView.greenTopColor,
+                                   blueTopColor: BlueBackgroundView.blueTopColor,
+                                   redBottomColor: BlueBackgroundView.redBottomColor,
+                                   greenBottomColor: BlueBackgroundView.blueBottomColor,
+                                   blueBottomColor: BlueBackgroundView.blueBottomColor,
+                                   darkBackground: false)
+        }
     }
 }
 
