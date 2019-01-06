@@ -17,6 +17,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var mBackgroundView: UIView!
     
     let mGradientLayer = CAGradientLayer()
+    let mWhiteColorCode: Float = 255.0
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,20 +47,20 @@ class ViewController: UIViewController {
         var topViewColor: CGColor!
 
         if darkBackground {
-            topViewColor = UIColor(red: CGFloat(redTopColor / 255.0),
-                                   green: CGFloat(greenTopColor / 255.0),
-                                   blue: CGFloat(blueTopColor / 255.0),
+            topViewColor = UIColor(red: CGFloat(redTopColor / mWhiteColorCode),
+                                   green: CGFloat(greenTopColor / mWhiteColorCode),
+                                   blue: CGFloat(blueTopColor / mWhiteColorCode),
                                    alpha: 1.0).cgColor
         } else {
-            topViewColor = UIColor(red: CGFloat(redTopColor / 255.0),
-                                   green: CGFloat(greenTopColor / 255.0),
+            topViewColor = UIColor(red: CGFloat(redTopColor / mWhiteColorCode),
+                                   green: CGFloat(greenTopColor / mWhiteColorCode),
                                    blue: CGFloat(blueTopColor),
                                    alpha: 1.0).cgColor
         }
         
-        bottomViewColor = UIColor(red: CGFloat(redBottomColor / 255.0),
-                                      green: CGFloat(redBottomColor / 255.0),
-                                      blue: CGFloat(redBottomColor / 255.0), alpha: 1.0).cgColor
+        bottomViewColor = UIColor(red: CGFloat(redBottomColor / mWhiteColorCode),
+                                      green: CGFloat(redBottomColor / mWhiteColorCode),
+                                      blue: CGFloat(redBottomColor / mWhiteColorCode), alpha: 1.0).cgColor
         
         mGradientLayer.frame = view.bounds
         mGradientLayer.colors = [topViewColor, bottomViewColor]
