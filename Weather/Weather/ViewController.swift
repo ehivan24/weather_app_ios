@@ -12,7 +12,7 @@ import Alamofire
 import NVActivityIndicatorView
 import CoreLocation
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var mLocationLabel: UILabel!
     @IBOutlet weak var mDayOfWeekLabel: UILabel!
     @IBOutlet weak var mConditionImageView: UIImageView!
@@ -22,13 +22,28 @@ class ViewController: UIViewController {
     
     let mGradientLayer = CAGradientLayer()
     let mWhiteColorCode: Float = 255.0
-    
+    var activityNavigator: NVActivityIndicatorView!
+    let locationManager =  CLLocationManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         mBackgroundView.layer.addSublayer(mGradientLayer)
-    
+        
+        let indicatorSize: CGFloat = 70
+        let indicatorFrame = CGRect(x:(view.frame.width - indicatorSize)/2,
+                                    y:(view.frame.height)/2, width: indicatorSize , height: indicatorSize)
+        activityNavigator = NVActivityIndicatorView(frame: indicatorFrame, type: .lineScale, color: UIColor.white, padding: 20.0 )
+        activityNavigator.backgroundColor = UIColor.black
+        view.addSubview(activityNavigator)
+        
+        locationManager.requestWhenInUseAuthorization()
+        activityNavigator.startAnimating()
+        
+        if (CLLocationManager.locationServicesEnabled()){
+            locationManager.delegate = self
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.startUpdatingLocation()
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -43,6 +58,27 @@ class ViewController: UIViewController {
                           redBottomColor: BlueBackgroundView.redBottomColor,
                           greenBottomColor: BlueBackgroundView.blueBottomColor,
                           blueBottomColor: BlueBackgroundView.blueBottomColor, darkBackground: false)
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let location = locations[0]
+        AppSettings.INITIAL_LAT = location.coordinate.latitude
+        AppSettings.INITIAL_LON = location.coordinate.longitude
+        print(AppSettings.INITIAL_LAT)
+        print(AppSettings.INITIAL_LON)
+        let weatherAPIURL = AppSettings.getOpenWeatherApiUrl(lat: AppSettings.INITIAL_LAT, lon: AppSettings.INITIAL_LON)
+        print(weatherAPIURL)
+        Alamofire.request(weatherAPIURL).responseJSON{
+            response in
+            self.activityNavigator.stopAnimating()
+            
+            if let responseStr = response.result.value {
+                let jsonResponse = JSON(responseStr)
+                print(jsonResponse)
+                let jsonWeather = jsonResponse["weather"].array![0]
+                
+            }
+        }
     }
     
     func setViewBackground(redTopColor: Float, greenTopColor: Float, blueTopColor: Float,
